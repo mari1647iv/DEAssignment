@@ -1,17 +1,18 @@
 package sample;
 
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Separator;
-import javafx.scene.layout.Pane;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
@@ -89,121 +90,30 @@ public class Controller implements Initializable {
                     }
                 }
                 if (N < 1) {
-                        ErrorLabel.setText("Wrong value of N! Graph cannot be constructed.");
-                        ErrorLabel.setTextFill(Color.RED);
+                    ErrorLabel.setText("Wrong value of N! Graph cannot be constructed.");
+                    ErrorLabel.setTextFill(Color.RED);
                 } else {
-                    XYChart.Series<Number, Number> EM = new XYChart.Series<>();
-                    XYChart.Series<Number, Number> IEM = new XYChart.Series<>();
-                    XYChart.Series<Number, Number> RKM = new XYChart.Series<>();
-
+                    EulerMethod EM;
+                    ImprovedEulerMethod IEM;
+                    RungeKuttaMethod RKM;
                     if (IVPButton.isSelected()) {
-                        XYChart.Series<Number, Number> EMTotalError = new XYChart.Series<>();
-                        XYChart.Series<Number, Number> EMLocalError = new XYChart.Series<>();
+                        ExactSolution ES = new ExactSolution(x0, y0, X, N);
 
-                        XYChart.Series<Number, Number> IEMTotalError = new XYChart.Series<>();
-                        XYChart.Series<Number, Number> IEMLocalError = new XYChart.Series<>();
+                        EM = new EulerMethod(x0, y0, X, N);
+                        IEM = new ImprovedEulerMethod(x0, y0, X, N);
+                        RKM = new RungeKuttaMethod(x0, y0, X, N);
 
-                        XYChart.Series<Number, Number> RKMTotalError = new XYChart.Series<>();
-                        XYChart.Series<Number, Number> RKMLocalError = new XYChart.Series<>();
+                        EMChart.getData().setAll(EM.Y);
+                        EMChart.getData().addAll(ES.calculateSeries(), EM.TotalError, EM.LocalError);
 
-                        XYChart.Series<Number, Number> ES = new XYChart.Series<>();
-                        XYChart.Series<Number, Number> ESCopy1 = new XYChart.Series<>();
-                        XYChart.Series<Number, Number> ESCopy2 = new XYChart.Series<>();
+                        IEMChart.getData().setAll(IEM.Y);
+                        IEMChart.getData().addAll(ES.calculateSeries(), IEM.TotalError, IEM.LocalError);
 
-                        EM.setName("Euler Method Graph");
-                        EMTotalError.setName("Euler Method Total Errors Graph");
-                        EMLocalError.setName("Euler Method Local Errors Graph");
-
-                        IEM.setName("Improved Euler Method Graph");
-                        IEMTotalError.setName("Improved Euler Method Total Errors Graph");
-                        IEMLocalError.setName("Improved Euler Method Local Errors Graph");
-
-                        RKM.setName("Runge-Kutta Method Graph");
-                        RKMTotalError.setName("Runge-Kutta Method Total Errors Graph");
-                        RKMLocalError.setName("Runge-Kutta Method Local Errors Graph");
-
-                        ES.setName("Exact Solution oF IVP");
-                        ESCopy1.setName("Exact Solution oF IVP");
-                        ESCopy2.setName("Exact Solution oF IVP");
+                        RKMChart.getData().setAll(RKM.Y);
+                        RKMChart.getData().addAll(ES.calculateSeries(), RKM.TotalError, RKM.LocalError);
 
 
-                        double[] x = new double[N], y = new double[N], ete = new double[N], ele = new double[N], yi = new double[N], ite = new double[N], ile = new double[N], k = new double[4], yrk = new double[N], rkte = new double[N], rkle = new double[N], ye = new double[N];
-
-
-                        x[0] = x0;
-                        y[0] = y0;
-                        yi[0] = y0;
-                        yrk[0] = y0;
-                        ye[0] = y0;
-
-                        ete[0] = 0;
-                        ite[0] = 0;
-                        rkte[0] = 0;
-
-                        ele[0] = 0;
-                        ile[0] = 0;
-                        rkle[0] = 0;
-
-                        double h = (X - x0) / (N - 1);
-
-
-                        int i0 = N;
-                        for (int i = 1; i < N; i++) {
-                            x[i] = x[i - 1] + h;
-                            if ((x[i - 1] < 0) && (x[i] >= 0)) {
-                                i0 = i;
-                                break;
-                            }
-                            ye[i] = (2 * c * Math.pow(x[i], 4) + 2) / (c * Math.pow(x[i], 5) - x[i]);
-
-                            y[i] = y[i - 1] + h * f.getResult(x[i - 1], y[i - 1]);
-                            ete[i] = Math.abs(y[i] - ye[i]);
-                            ele[i] = Math.abs(ete[i] - ete[i - 1]);
-
-                            yi[i] = yi[i - 1] + (h / 2) * (f.getResult(x[i-1], yi[i-1]) + f.getResult(x[i], yi[i-1] + h * f.getResult(x[i-1], yi[i-1])));
-                            ite[i] = Math.abs(yi[i] - ye[i]);
-                            ile[i] = Math.abs(ite[i] - ite[i - 1]);
-
-                            k[0] = f.getResult(x[i - 1], yrk[i - 1]);
-                            k[1] = f.getResult(x[i - 1] + (h / 2), yrk[i - 1] + (k[0] * h / 2));
-                            k[2] = f.getResult(x[i - 1] + (h / 2), yrk[i - 1] + (k[1] * h / 2));
-                            k[3] = f.getResult(x[i - 1] + h, yrk[i - 1] + (h * k[2]));
-                            yrk[i] = yrk[i - 1] + (h / 6) * (k[0] + 2 * k[1] + 2 * k[2] + k[3]);
-                            rkte[i] = Math.abs(yrk[i] - ye[i]);
-                            rkle[i] = Math.abs(rkte[i] - rkte[i - 1]);
-                        }
-
-
-                        for (int i = 0; i < i0; i++) {
-                            EM.getData().add(new XYChart.Data<>(x[i], y[i]));
-                            EMTotalError.getData().add(new XYChart.Data<>(x[i], ete[i]));
-                            EMLocalError.getData().add(new XYChart.Data<>(x[i], ele[i]));
-
-                            IEM.getData().add(new XYChart.Data<>(x[i], yi[i]));
-                            IEMTotalError.getData().add(new XYChart.Data<>(x[i], ite[i]));
-                            IEMLocalError.getData().add(new XYChart.Data<>(x[i], ile[i]));
-
-                            RKM.getData().add(new XYChart.Data<>(x[i], yrk[i]));
-                            RKMTotalError.getData().add(new XYChart.Data<>(x[i], rkte[i]));
-                            RKMLocalError.getData().add(new XYChart.Data<>(x[i], rkle[i]));
-
-                            ES.getData().add(new XYChart.Data<>(x[i], ye[i]));
-                            ESCopy1.getData().add(new XYChart.Data<>(x[i], ye[i]));
-                            ESCopy2.getData().add(new XYChart.Data<>(x[i], ye[i]));
-                        }
-
-
-                        EMChart.getData().setAll(EM);
-                        EMChart.getData().addAll(ES, EMTotalError, EMLocalError);
-
-                        IEMChart.getData().setAll(IEM);
-                        IEMChart.getData().addAll(ESCopy2, IEMTotalError, IEMLocalError);
-
-                        RKMChart.getData().setAll(RKM);
-                        RKMChart.getData().addAll(ESCopy1, RKMTotalError, RKMLocalError);
-
-
-                        if (i0 != N) {
+                        if ((x0 < 0) && (X >= 0)) {
                             ErrorLabel.setText("Graph was pertially constructed! y[0] does not exist. Graph cannot be fully constructed.");
                             ErrorLabel.setTextFill(Color.web("#FFDC00"));
                         } else {
@@ -211,59 +121,36 @@ public class Controller implements Initializable {
                             ErrorLabel.setTextFill(Color.LIME);
                         }
                     }
-                    if(ErrorButton.isSelected()) {
+                    if (ErrorButton.isSelected()) {
 
                         if (N < 1) {
                             ErrorLabel.setText("Wrong value of N1! Graph cannot be constructed.");
                             ErrorLabel.setTextFill(Color.RED);
-                            EMChart.getData().clear();
-                            IEMChart.getData().clear();
-                            RKMChart.getData().clear();
                         } else {
                             if (N > N2) {
                                 ErrorLabel.setText("Wrong values of N1 and N2! Graph cannot be constructed.");
                                 ErrorLabel.setTextFill(Color.RED);
-                                EMChart.getData().clear();
-                                IEMChart.getData().clear();
-                                RKMChart.getData().clear();
                             } else {
-                                EM.setName("Total Error of Approximation in Euler Method");
-                                IEM.setName("Total Error of Approximation in Improved Euler Method");
-                                RKM.setName("Total Error of Approximation in Runge-Kutta Method");
-                                double x, y, yi, yrk, yeX = (2 * c * Math.pow(X, 4) + 2) / (c * Math.pow(X, 5) - X);
-                                double[] k = new double[4];
+                                XYChart.Series<Number, Number> EMTotalError = new XYChart.Series<>();
+                                XYChart.Series<Number, Number> IEMTotalError = new XYChart.Series<>();
+                                XYChart.Series<Number, Number> RKMTotalError = new XYChart.Series<>();
+
+                                EMTotalError.setName("Total Error of Approximation in Euler Method");
+                                IEMTotalError.setName("Total Error of Approximation in Improved Euler Method");
+                                RKMTotalError.setName("Total Error of Approximation in Runge-Kutta Method");
 
                                 for (int i = 0; i < N2 - N + 1; i++) {
-                                    double h = (X - x0) / (N + i - 1);
+                                    EM = new EulerMethod(x0, y0, X, N + i);
+                                    IEM = new ImprovedEulerMethod(x0, y0, X, N + i);
+                                    RKM = new RungeKuttaMethod(x0, y0, X, N + i);
 
-                                    x = x0;
-                                    y = y0;
-                                    yi = y0;
-                                    yrk = y0;
-
-                                    for (int j = 1; j < N + i; j++) {
-                                        if ((x < 0) && (x + h >= 0)) {
-                                            break;
-                                        }
-
-                                        k[0] = f.getResult(x, yrk);
-                                        k[1] = f.getResult(x + (h / 2), yrk + (k[0] * h / 2));
-                                        k[2] = f.getResult(x + (h / 2), yrk + (k[1] * h / 2));
-                                        k[3] = f.getResult(x + h, yrk + (h * k[2]));
-
-                                        y = y + h * f.getResult(x, y);
-                                        x = x + h;
-                                        yi = yi + (h / 2) * (f.getResult(x - h, yi) + f.getResult(x, yi + h * f.getResult(x - h, yi)));
-                                        yrk = yrk + (h / 6) * (k[0] + 2 * k[1] + 2 * k[2] + k[3]);
-                                    }
-
-                                    EM.getData().add(new XYChart.Data<>(N + i, Math.abs(y - yeX)));
-                                    IEM.getData().add(new XYChart.Data<>(N + i, Math.abs(yi - yeX)));
-                                    RKM.getData().add(new XYChart.Data<>(N + i, Math.abs(yrk - yeX)));
+                                    EMTotalError.getData().add(new XYChart.Data<>(N + i, EM.TotalErrorInX));
+                                    IEMTotalError.getData().add(new XYChart.Data<>(N + i, IEM.TotalErrorInX));
+                                    RKMTotalError.getData().add(new XYChart.Data<>(N + i, RKM.TotalErrorInX));
                                 }
 
-                                IEMChart.getData().setAll(EM);
-                                IEMChart.getData().addAll(IEM, RKM);
+                                IEMChart.getData().setAll(EMTotalError);
+                                IEMChart.getData().addAll(IEMTotalError, RKMTotalError);
 
                                 ErrorLabel.setText("Graph was successfully constructed!");
                                 ErrorLabel.setTextFill(Color.LIME);
@@ -285,7 +172,7 @@ public class Controller implements Initializable {
         buildGraph();
     }
 
-    public void ShowPane(){
+    public void ShowPane() {
         ErrorGraphData.setVisible(true);
         EMChart.setVisible(false);
         RKMChart.setVisible(false);
@@ -295,7 +182,8 @@ public class Controller implements Initializable {
 
         toInitial();
     }
-    public void HidePane(){
+
+    public void HidePane() {
         ErrorGraphData.setVisible(false);
         EMChart.setVisible(true);
         RKMChart.setVisible(true);
@@ -315,10 +203,13 @@ class Func{
 }
 
 abstract class NumericalMethod{
-    double x0, y0, X;
+    double x0, y0, X, TotalErrorInX;
     int N;
+    XYChart.Series<Number, Number> Y = new XYChart.Series<>();
+    XYChart.Series<Number, Number> TotalError = new XYChart.Series<>();
+    XYChart.Series<Number, Number> LocalError = new XYChart.Series<>();
 
-    public XYChart.Series<Number, Number> calculateSeries;
+    abstract public void calculateSeries();
 }
 
 class EulerMethod extends NumericalMethod{
@@ -328,11 +219,45 @@ class EulerMethod extends NumericalMethod{
         y0 = Y0;
         X = x;
         N = n;
+
+        Y.setName("Euler Method Graph");
+        TotalError.setName("Euler Method Total Errors Graph");
+        LocalError.setName("Euler Method Local Errors Graph");
+
+        calculateSeries();
     }
 
-    //public XYChart.Series<Number, Number> calculateSeries(){
+    public void calculateSeries(){
+        Func f = new Func();
+        ExactSolution es = new ExactSolution(x0, y0, X, N);
+        double[] x = new double[N], y = new double[N], te = new double[N], le = new double[N];
 
-  //  }
+        x[0] = x0;
+        y[0] = y0;
+        te[0] = 0;
+        le[0] = 0;
+        double h = (X - x0) / (N - 1);
+
+        int i0 = N;
+        for (int i = 1; i < N; i++) {
+            x[i] = x[i - 1] + h;
+            if ((x[i - 1] < 0) && (x[i] >= 0)) {
+                i0 = i;
+                break;
+            }
+
+            y[i] = y[i - 1] + h * f.getResult(x[i - 1], y[i - 1]);
+            te[i] = Math.abs(y[i] - es.getY(x[i]));
+            le[i] = Math.abs(te[i] - te[i - 1]);
+        }
+        TotalErrorInX = te[i0-1];
+
+        for (int i = 0; i < i0; i++) {
+            Y.getData().add(new XYChart.Data<>(x[i], y[i]));
+            TotalError.getData().add(new XYChart.Data<>(x[i], te[i]));
+            LocalError.getData().add(new XYChart.Data<>(x[i], le[i]));
+        }
+    }
 }
 
 class ImprovedEulerMethod extends NumericalMethod{
@@ -342,11 +267,46 @@ class ImprovedEulerMethod extends NumericalMethod{
         y0 = Y0;
         X = x;
         N = n;
+
+        Y.setName("Improved Euler Method Graph");
+        TotalError.setName("Improved Euler Method Total Errors Graph");
+        LocalError.setName("Improved Euler Method Local Errors Graph");
+
+        calculateSeries();
     }
 
-    //public XYChart.Series<Number, Number> calculateSeries(){
+    public void calculateSeries(){
+        Func f = new Func();
+        ExactSolution es = new ExactSolution(x0, y0, X, N);
+        double[] x = new double[N], y = new double[N], te = new double[N], le = new double[N];
 
-    //  }
+        x[0] = x0;
+        y[0] = y0;
+        te[0] = 0;
+        le[0] = 0;
+        double h = (X - x0) / (N - 1);
+
+        int i0 = N;
+        for (int i = 1; i < N; i++) {
+            x[i] = x[i - 1] + h;
+            if ((x[i - 1] < 0) && (x[i] >= 0)) {
+                i0 = i;
+                break;
+            }
+
+            y[i] = y[i - 1] + (h / 2) * (f.getResult(x[i-1], y[i-1]) + f.getResult(x[i], y[i-1] + h * f.getResult(x[i-1], y[i-1])));
+            te[i] = Math.abs(y[i] - es.getY(x[i]));
+            le[i] = Math.abs(te[i] - te[i - 1]);
+        }
+
+        TotalErrorInX = te[i0-1];
+
+        for (int i = 0; i < i0; i++) {
+            Y.getData().add(new XYChart.Data<>(x[i], y[i]));
+            TotalError.getData().add(new XYChart.Data<>(x[i], te[i]));
+            LocalError.getData().add(new XYChart.Data<>(x[i], le[i]));
+        }
+    }
 }
 
 class RungeKuttaMethod extends NumericalMethod{
@@ -356,11 +316,50 @@ class RungeKuttaMethod extends NumericalMethod{
         y0 = Y0;
         X = x;
         N = n;
+
+        Y.setName("Runge-Kutta Method Graph");
+        TotalError.setName("Runge-Kutta Method Total Errors Graph");
+        LocalError.setName("Runge-Kutta Method Local Errors Graph");
+
+        calculateSeries();
     }
 
-    //public XYChart.Series<Number, Number> calculateSeries(){
+    public void calculateSeries(){
+        Func f = new Func();
+        ExactSolution es = new ExactSolution(x0, y0, X, N);
+        double[] x = new double[N], y = new double[N], te = new double[N], le = new double[N], k = new double[4];
 
-    //  }
+        x[0] = x0;
+        y[0] = y0;
+        te[0] = 0;
+        le[0] = 0;
+        double h = (X - x0) / (N - 1);
+
+        int i0 = N;
+        for (int i = 1; i < N; i++) {
+            x[i] = x[i - 1] + h;
+            if ((x[i - 1] < 0) && (x[i] >= 0)) {
+                i0 = i;
+                break;
+            }
+
+            k[0] = f.getResult(x[i - 1], y[i - 1]);
+            k[1] = f.getResult(x[i - 1] + (h / 2), y[i - 1] + (k[0] * h / 2));
+            k[2] = f.getResult(x[i - 1] + (h / 2), y[i - 1] + (k[1] * h / 2));
+            k[3] = f.getResult(x[i - 1] + h, y[i - 1] + (h * k[2]));
+            y[i] = y[i - 1] + (h / 6) * (k[0] + 2 * k[1] + 2 * k[2] + k[3]);
+            te[i] = Math.abs(y[i] - es.getY(x[i]));
+            le[i] = Math.abs(te[i] - te[i - 1]);
+        }
+
+        TotalErrorInX = te[i0-1];
+
+        for (int i = 0; i < i0; i++) {
+            Y.getData().add(new XYChart.Data<>(x[i], y[i]));
+            TotalError.getData().add(new XYChart.Data<>(x[i], te[i]));
+            LocalError.getData().add(new XYChart.Data<>(x[i], le[i]));
+        }
+    }
 }
 
 class ExactSolution{
@@ -379,7 +378,24 @@ class ExactSolution{
         return (2 * c * Math.pow(x, 4) + 2) / (c * Math.pow(x, 5) - x);
     }
 
-    //public XYChart.Series<Number, Number> calculateSeries(){
+    public XYChart.Series<Number, Number> calculateSeries(){
+        XYChart.Series<Number, Number> Y = new XYChart.Series<>();
+        Y.setName("Exact Solution of IVP");
+        double x;
 
-    //  }
+        double h = (X - x0) / (N - 1);
+        x = x0;
+        Y.getData().add(new XYChart.Data<>(x, y0));
+
+        int i0 = N;
+        for (int i = 1; i < N; i++) {
+            if ((x < 0) && (x+h >= 0)) {
+                i0 = i;
+                break;
+            }
+            x = x + h;
+            Y.getData().add(new XYChart.Data<>(x, getY(x)));
+        }
+        return Y;
+    }
 }
