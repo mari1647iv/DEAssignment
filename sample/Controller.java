@@ -334,3 +334,52 @@ class EulerMethod extends NumericalMethod{
 
   //  }
 }
+
+class ImprovedEulerMethod extends NumericalMethod{
+
+    public ImprovedEulerMethod(double X0, double Y0 , double x, int n) {
+        x0 = X0;
+        y0 = Y0;
+        X = x;
+        N = n;
+    }
+
+    //public XYChart.Series<Number, Number> calculateSeries(){
+
+    //  }
+}
+
+class RungeKuttaMethod extends NumericalMethod{
+
+    public RungeKuttaMethod(double X0, double Y0 , double x, int n) {
+        x0 = X0;
+        y0 = Y0;
+        X = x;
+        N = n;
+    }
+
+    //public XYChart.Series<Number, Number> calculateSeries(){
+
+    //  }
+}
+
+class ExactSolution{
+    double x0, y0, X, c;
+    int N;
+
+    public ExactSolution(double X0, double Y0 , double x, int n) {
+        x0 = X0;
+        y0 = Y0;
+        X = x;
+        N = n;
+        c = (y0 * x0 + 2) / (y0 * Math.pow(x0, 5) - 2 * Math.pow(x0, 4));;
+    }
+
+    public double getY(double x){
+        return (2 * c * Math.pow(x, 4) + 2) / (c * Math.pow(x, 5) - x);
+    }
+
+    //public XYChart.Series<Number, Number> calculateSeries(){
+
+    //  }
+}
