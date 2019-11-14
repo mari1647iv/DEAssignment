@@ -36,8 +36,6 @@ public class Controller implements Initializable {
     }
 
     public void buildGraph() {
-        Func f = new Func();
-
         EMChart.getData().clear();
         IEMChart.getData().clear();
         RKMChart.getData().clear();
@@ -56,36 +54,36 @@ public class Controller implements Initializable {
                 Numerator.setText("");
                 Denominator.setText("");
             } else {
-                double c = (y0 * x0 + 2) / (y0 * Math.pow(x0, 5) - 2 * Math.pow(x0, 4));
+                ExactSolution ES = new ExactSolution(x0, y0, X, N);
                 if ((x0 == 1) && (y0 == 0)) {
                     Numerator.setText("2*x^4 - 2");
                     Denominator.setText("x^5 + x");
                 } else {
-                    if (c < 0) {
-                        if (c == -0.5) {
+                    if (ES.c < 0) {
+                        if (ES.c == -0.5) {
                             Numerator.setText("x^4 - 2");
                         } else {
-                            Numerator.setText(-2 * c + "*x^4 - 2");
+                            Numerator.setText(-2 * ES.c + "*x^4 - 2");
                         }
-                        if (c == -1) {
+                        if (ES.c == -1) {
                             Denominator.setText("x^5 + x");
                         } else {
-                            Denominator.setText(-c + "*x^5 + x");
+                            Denominator.setText(-ES.c + "*x^5 + x");
                         }
                     }
-                    if (c == 0) {
+                    if (ES.c == 0) {
                         Numerator.setText("-2");
                         Denominator.setText("x");
                     } else {
-                        if (c == 0.5) {
+                        if (ES.c == 0.5) {
                             Numerator.setText("x^4 + 2");
                         } else {
-                            Numerator.setText(2 * c + "*x^4 + 2");
+                            Numerator.setText(2 * ES.c + "*x^4 + 2");
                         }
-                        if (c == 1) {
+                        if (ES.c == 1) {
                             Denominator.setText("x^5 - x");
                         } else {
-                            Denominator.setText(c + "*x^5 - x");
+                            Denominator.setText(ES.c + "*x^5 - x");
                         }
                     }
                 }
@@ -97,8 +95,6 @@ public class Controller implements Initializable {
                     ImprovedEulerMethod IEM;
                     RungeKuttaMethod RKM;
                     if (IVPButton.isSelected()) {
-                        ExactSolution ES = new ExactSolution(x0, y0, X, N);
-
                         EM = new EulerMethod(x0, y0, X, N);
                         IEM = new ImprovedEulerMethod(x0, y0, X, N);
                         RKM = new RungeKuttaMethod(x0, y0, X, N);
